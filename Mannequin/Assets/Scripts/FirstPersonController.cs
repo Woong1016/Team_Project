@@ -15,6 +15,11 @@ public class FirstPersonController : MonoBehaviour
 
     private NavMeshAgent navAgent;
 
+    public bool isDesh = false;
+    public int DeshSpeed = 10;
+
+
+
 
     private void Start()
     {
@@ -31,6 +36,32 @@ public class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
+
+        MoveMent();
+        DoDesh();
+
+
+
+    }
+
+    public void DoDesh()
+    {
+        if(Input.GetKey(KeyCode.LeftShift))
+        {
+            isDesh = true;
+        }
+
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            isDesh = false;
+        }
+
+
+    }
+
+    public void MoveMent()
+    {
+
         // 마우스 이동으로 시점 회전을 처리합니다.
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
@@ -42,13 +73,26 @@ public class FirstPersonController : MonoBehaviour
         transform.Rotate(Vector3.up * mouseX);
 
         // 플레이어 이동을 처리합니다.
+
+        if (isDesh)
+        {
+            movementSpeed = DeshSpeed;
+        }
+        else
+        {
+            movementSpeed = 5.0f;
+        }
+
         float horizontalMovement = Input.GetAxis("Horizontal") * movementSpeed;
         float verticalMovement = Input.GetAxis("Vertical") * movementSpeed;
 
         Vector3 movement = transform.right * horizontalMovement + transform.forward * verticalMovement;
         movement.y = rb.velocity.y;
-          
+
+       
+
         rb.velocity = movement;
+
 
     }
 }
