@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - HealthPickup
+  - KeyPickup_01
+  - KeyPickup_02
+  - DoorObject
   layers:
   - Default
   - TransparentFX
