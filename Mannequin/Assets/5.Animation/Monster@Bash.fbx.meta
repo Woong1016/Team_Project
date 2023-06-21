@@ -43,8 +43,8 @@ ModelImporter:
       name: Bash
       takeName: mixamo.com
       internalID: -203655887218126122
-      firstFrame: 0
-      lastFrame: 120
+      firstFrame: 11
+      lastFrame: 107
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

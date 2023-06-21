@@ -131,15 +131,16 @@ public class FirstPersonController : MonoBehaviour
         rb.velocity = movement;
     }
 
-    public void TakeDamage(int damage)
-    {
-        currentHp -= damage;
+   public void TakeDamage(int damage)
+{
+    currentHp -= 20; // 피격 시 입는 피해량을 20으로 수정했습니다.
 
-        if (currentHp <= 0)
-        {
-            Die();
-        }
+    if (currentHp <= 0)
+    {
+        Die();
     }
+}
+
 
     public void Heal(int healAmount)
     {
@@ -200,4 +201,5 @@ public class FirstPersonController : MonoBehaviour
             }
         }
     }
+    
 }
