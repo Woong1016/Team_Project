@@ -5,20 +5,20 @@ using UnityEngine.AI;
 
 public class MonsterCtrl : MonoBehaviour
 {
-    public Transform[] destinations; // ÀÌµ¿ÇÒ ¸ñÀûÁöµéÀ» ´ãÀº ¹è¿­
-    private int currentDestinationIndex = 0; // ÇöÀç ¸ñÀûÁö ÀÎµ¦½º
+    public Transform[] destinations; // ì´ë™í•  ëª©ì ì§€ë“¤ì„ ë‹´ì€ ë°°ì—´
+    private int currentDestinationIndex = 0; // í˜„ì¬ ëª©ì ì§€ ì¸ë±ìŠ¤
 
-    public float chaseDistance = 10f; // ÇÃ·¹ÀÌ¾î¸¦ °¨ÁöÇÒ °Å¸®
-    public float returnDistance = 15f; // µ¿¼± º¹±Í¸¦ ½ÃÀÛÇÒ °Å¸®
+    public float chaseDistance = 10f; // í”Œë ˆì´ì–´ë¥¼ ê°ì§€í•  ê±°ë¦¬
+    public float returnDistance = 15f; // ë™ì„  ë³µê·€ë¥¼ ì‹œì‘í•  ê±°ë¦¬
 
     private Transform monsterTr;
     private Transform playerTr;
     private NavMeshAgent agent;
 
-    private bool isChasing = false; // ÇÃ·¹ÀÌ¾î¸¦ ÂÑ¾Æ°¡´Â ÁßÀÎÁö ¿©ºÎ
+    private bool isChasing = false; // í”Œë ˆì´ì–´ë¥¼ ì«“ì•„ê°€ëŠ” ì¤‘ì¸ì§€ ì—¬ë¶€
 
-    private Vector3 initialPosition; // ¸ó½ºÅÍÀÇ ÃÊ±â À§Ä¡
-    private Quaternion initialRotation; // ¸ó½ºÅÍÀÇ ÃÊ±â È¸Àü
+    private Vector3 initialPosition; // ëª¬ìŠ¤í„°ì˜ ì´ˆê¸° ìœ„ì¹˜
+    private Quaternion initialRotation; // ëª¬ìŠ¤í„°ì˜ ì´ˆê¸° íšŒì „
 
     void Start()
     {
@@ -38,10 +38,10 @@ public class MonsterCtrl : MonoBehaviour
 
         if (isChasing)
         {
-            // ÇÃ·¹ÀÌ¾î¸¦ ÂÑ¾Æ°¨
+            // í”Œë ˆì´ì–´ë¥¼ ì«“ì•„ê°
             agent.destination = playerTr.position;
 
-            // ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸®°¡ ÀÏÁ¤ °Å¸®º¸´Ù ¸Ö¾îÁö¸é Ãß°İ Á¾·á
+            // í”Œë ˆì´ì–´ì™€ì˜ ê±°ë¦¬ê°€ ì¼ì • ê±°ë¦¬ë³´ë‹¤ ë©€ì–´ì§€ë©´ ì¶”ê²© ì¢…ë£Œ
             if (distanceToPlayer > returnDistance)
             {
                 isChasing = false;
@@ -50,14 +50,14 @@ public class MonsterCtrl : MonoBehaviour
         }
         else
         {
-            // µ¿¼±À» µû¶ó ÀÌµ¿
+            // ë™ì„ ì„ ë”°ë¼ ì´ë™
             if (!agent.pathPending && agent.remainingDistance < 0.5f)
             {
                 currentDestinationIndex = (currentDestinationIndex + 1) % destinations.Length;
                 agent.destination = destinations[currentDestinationIndex].position;
             }
 
-            // ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸®°¡ Ãß°İ °Å¸® ÀÌ³»ÀÌ¸é ÇÃ·¹ÀÌ¾î¸¦ ÂÑ¾Æ°¨
+            // í”Œë ˆì´ì–´ì™€ì˜ ê±°ë¦¬ê°€ ì¶”ê²© ê±°ë¦¬ ì´ë‚´ì´ë©´ í”Œë ˆì´ì–´ë¥¼ ì«“ì•„ê°
             if (distanceToPlayer < chaseDistance)
             {
                 isChasing = true;
@@ -65,7 +65,7 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-    // ¸ó½ºÅÍ ÃÊ±âÈ­
+    // ëª¬ìŠ¤í„° ì´ˆê¸°í™”
     public void ResetMonster()
     {
         isChasing = false;

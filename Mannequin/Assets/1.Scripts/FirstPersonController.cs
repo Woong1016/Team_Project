@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -9,6 +7,7 @@ public class FirstPersonController : MonoBehaviour
     public float movementSpeed = 5f;
     public float mouseSensitivity = 3f;
     public float jumpForce = 5f;
+    public float warningDistance = 10f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½
 
     private Camera playerCamera;
     private float verticalRotation = 0f;
@@ -30,6 +29,8 @@ public class FirstPersonController : MonoBehaviour
     public GameObject uiKey_01;
     public GameObject uiKey_02;
 
+    public Transform monster;        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ Transform ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+    public AudioSource warningAudioSource;  // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ AudioSource ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 
     private void Start()
     {
@@ -42,7 +43,7 @@ public class FirstPersonController : MonoBehaviour
 
         uiKey_01.SetActive(false);
         uiKey_02.SetActive(false);
-        currentHp = maxHp; // ½ÃÀÛ ½Ã ÃÖ´ë Ã¼·ÂÀ¸·Î ÃÊ±âÈ­
+        currentHp = maxHp; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ Ã¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
     }
 
     private void Update()
@@ -50,11 +51,11 @@ public class FirstPersonController : MonoBehaviour
         Movement();
         DoDash();
         UiUpdate();
+        PlayWarningSound();
     }
 
     public void UiUpdate()
     {
-
         float viewHp = currentHp;
         float viewMaxHp = maxHp;
         uiHpimage.rectTransform.sizeDelta = new Vector2((viewHp / viewMaxHp) * 800.0f, 364.0f);
@@ -67,9 +68,27 @@ public class FirstPersonController : MonoBehaviour
 
         if (Key_01) uiKey_01.SetActive(true);
         if (Key_02) uiKey_02.SetActive(true);
-
     }
 
+    public void PlayWarningSound()
+    {
+        float distance = Vector3.Distance(transform.position, monster.position);
+
+        if (distance <= warningDistance)
+        {
+            if (!warningAudioSource.isPlaying)
+            {
+                warningAudioSource.Play();
+            }
+        }
+        else
+        {
+            if (warningAudioSource.isPlaying)
+            {
+                warningAudioSource.Stop();
+            }
+        }
+    }
 
     public void DoDash()
     {
@@ -77,7 +96,6 @@ public class FirstPersonController : MonoBehaviour
         {
             isDashing = true;
         }
-
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             isDashing = false;
@@ -135,9 +153,9 @@ public class FirstPersonController : MonoBehaviour
 
     private void Die()
     {
-        // ÇÃ·¹ÀÌ¾îÀÇ »ç¸Á Ã³¸®¸¦ ±¸ÇöÇÕ´Ï´Ù.
-        // ¿¹¸¦ µé¾î, °ÔÀÓ ¿À¹ö È­¸éÀ» º¸¿©ÁÖ°Å³ª ¸®½ºÆù ·ÎÁ÷À» ½ÇÇàÇÒ ¼ö ÀÖ½À´Ï´Ù.
-        // ÀÌ ºÎºÐÀº °ÔÀÓ¿¡ µû¶ó ±¸Çö ¹æ½ÄÀÌ ´Þ¶óÁú ¼ö ÀÖ½À´Ï´Ù.
+        // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
+        // ï¿½ï¿½ ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¶ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
     }
 
     private void OnTriggerEnter(Collider other)
@@ -174,15 +192,12 @@ public class FirstPersonController : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-
         if (other.CompareTag("DoorObject"))
         {
-            if(Key_01 == true && Key_02 == true)
+            if (Key_01 && Key_02)
             {
-                //¹®ÀÌ ¿­¸®´Â Ã³¸® 
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ 
             }
-            
         }
     }
-
 }
