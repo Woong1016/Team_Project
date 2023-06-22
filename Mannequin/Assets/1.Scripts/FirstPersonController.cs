@@ -41,6 +41,10 @@ public class FirstPersonController : MonoBehaviour
 
     public Transform monster;
     public AudioSource warningAudioSource;
+    public AudioSource lowHealthAudioSource; // 플레이어의 체력이 낮을 때 재생할 오디오 소스
+    private bool isLowHealthAudioPlaying = false; // 체력이 낮은 상태에서 오디오 소스가 재생 중인지를 나타내는 변수
+
+
 
     public float interactDistance = 3f; // 상호작용 가능한 거리
     private bool nearDoor = false; // 문 근처에 있는지 여부를 나타내는 변수
@@ -56,6 +60,21 @@ public class FirstPersonController : MonoBehaviour
         currentHp = maxHp;
         currentStamina = maxStamina;
         staminaRecoveryTimer = staminaRecoveryDelay;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        // 씬 전환 이벤트에 함수 등록
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
+    }
+
+    // 씬이 로드될 때 호출되는 함수
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // 마우스 커서 보이기
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     private void Update()
