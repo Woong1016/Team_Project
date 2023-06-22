@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
-
+using System.Collections;
+using UnityEngine.SceneManagement;
 public class FirstPersonController : MonoBehaviour
 {
     public float movementSpeed = 5f;
     public float mouseSensitivity = 3f;
     public float jumpForce = 5f;
-    public float warningDistance = 10f; // ������� ����� �Ÿ�
+    public float warningDistance = 10f;
 
     private Camera playerCamera;
     private float verticalRotation = 0f;
@@ -29,8 +30,8 @@ public class FirstPersonController : MonoBehaviour
     public GameObject uiKey_01;
     public GameObject uiKey_02;
 
-    public Transform monster;        // ���� ������Ʈ�� Transform ������Ʈ
-    public AudioSource warningAudioSource;  // ����� ����� ���� AudioSource ������Ʈ
+    public Transform monster;
+    public AudioSource warningAudioSource;
 
     private void Start()
     {
@@ -43,7 +44,7 @@ public class FirstPersonController : MonoBehaviour
 
         uiKey_01.SetActive(false);
         uiKey_02.SetActive(false);
-        currentHp = maxHp; // ���� �� �ִ� ü������ �ʱ�ȭ
+        currentHp = maxHp;
     }
 
     private void Update()
@@ -131,15 +132,43 @@ public class FirstPersonController : MonoBehaviour
         rb.velocity = movement;
     }
 
-   public void TakeDamage(int damage)
-{
-    currentHp -= 20; // 피격 시 입는 피해량을 20으로 수정했습니다.
-
-    if (currentHp <= 0)
+    public void TakeDamage(int damage)
     {
-        Die();
+        currentHp -= damage;
+
+        if (currentHp <= 0)
+        {
+            StartCoroutine(StartEndingScene());
+        }
+        else
+        {
+            // 피해를 입은 후의 처리를 여기에 추가할 수 있습니다.
+        }
     }
-}
+
+    private IEnumerator StartEndingScene()
+    {
+        float fadeDuration = 2f; // 페이드 인/아웃에 걸리는 시간 (초)
+        float elapsedTime = 0f;
+        Color startColor = Color.clear;
+        Color endColor = Color.black;
+
+        // 화면을 점점 어둡게 만듭니다.
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / fadeDuration);
+            float alpha = Mathf.Lerp(startColor.a, endColor.a, t);
+
+            uiBlureffect.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+
+            yield return null;
+        }
+
+        // 엔딩 씬으로 전환합니다.
+         SceneManager.LoadScene("EndingScene"); // 엔딩 씬을 로드하는 코드를 추가해야 합니다.
+    }
+
 
 
     public void Heal(int healAmount)
@@ -154,9 +183,7 @@ public class FirstPersonController : MonoBehaviour
 
     private void Die()
     {
-        // �÷��̾��� ��� ó���� �����մϴ�.
-        // ���� ���, ���� ���� ȭ���� �����ְų� ������ ������ ������ �� �ֽ��ϴ�.
-        // �� �κ��� ���ӿ� ���� ���� ����� �޶��� �� �ֽ��ϴ�.
+        // Death logic goes here
     }
 
     private void OnTriggerEnter(Collider other)
@@ -169,7 +196,7 @@ public class FirstPersonController : MonoBehaviour
             {
                 currentHp += healthPickup.healthAmount;
 
-                if (maxHp <= currentHp)
+                if (currentHp > maxHp)
                 {
                     currentHp = maxHp;
                 }
@@ -177,29 +204,26 @@ public class FirstPersonController : MonoBehaviour
 
             Destroy(other.gameObject);
         }
-
-        if (other.CompareTag("KeyPickup_01"))
+        else if (other.CompareTag("Monster"))
+        {
+            TakeDamage(20);
+        }
+        else if (other.CompareTag("KeyPickup_01"))
         {
             Key_01 = true;
             Destroy(other.gameObject);
         }
-
-        if (other.CompareTag("KeyPickup_02"))
+        else if (other.CompareTag("KeyPickup_02"))
         {
             Key_02 = true;
             Destroy(other.gameObject);
         }
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.CompareTag("DoorObject"))
+        else if (other.CompareTag("DoorObject"))
         {
             if (Key_01 && Key_02)
             {
-                // ���� ������ ó�� 
+                // Open the door
             }
         }
     }
-    
 }

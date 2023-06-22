@@ -8,14 +8,15 @@ TagManager:
   - KeyPickup_01
   - KeyPickup_02
   - DoorObject
+  - Monster
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - 
+  - Monster
   - 
   - 
   - 
