@@ -3,6 +3,7 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.SceneManagement;
+
 public class FirstPersonController : MonoBehaviour
 {
     public float movementSpeed = 5f;
@@ -18,11 +19,19 @@ public class FirstPersonController : MonoBehaviour
     public bool isDashing = false;
     public int dashSpeed = 10;
 
+    public float maxStamina = 10f;
+    public float currentStamina;
+
+    public float staminaRecoveryRate = 0.5f;
+    public float staminaRecoveryDelay = 2f;
+    private float staminaRecoveryTimer;
+
     public int maxHp = 100;
     public int currentHp;
 
     public Image uiHpimage;
     public Image uiBlureffect;
+    public Image uiStaminaBar;
 
     public bool Key_01 = false;
     public bool Key_02 = false;
@@ -33,18 +42,20 @@ public class FirstPersonController : MonoBehaviour
     public Transform monster;
     public AudioSource warningAudioSource;
 
+    public float interactDistance = 3f; // 상호작용 가능한 거리
+    private bool nearDoor = false; // 문 근처에 있는지 여부를 나타내는 변수
+
     private void Start()
     {
         playerCamera = GetComponentInChildren<Camera>();
         rb = GetComponent<Rigidbody>();
         navAgent = GetComponent<NavMeshAgent>();
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
         uiKey_01.SetActive(false);
         uiKey_02.SetActive(false);
         currentHp = maxHp;
+        currentStamina = maxStamina;
+        staminaRecoveryTimer = staminaRecoveryDelay;
     }
 
     private void Update()
@@ -53,16 +64,56 @@ public class FirstPersonController : MonoBehaviour
         DoDash();
         UiUpdate();
         PlayWarningSound();
+
+        if (nearDoor && Input.GetKeyDown(KeyCode.E))
+        {
+            if (Key_01 && Key_02)
+            {
+                StartCoroutine(StartGoodEnding());
+            }
+        }
+
+        if (currentHp <= 0)
+        {
+            StartCoroutine(StartEndingScene());
+        }
+
+        // 스테미나 회복 로직
+        if (!isDashing)
+        {
+            if (currentStamina < maxStamina)
+            {
+                staminaRecoveryTimer -= Time.deltaTime;
+
+                if (staminaRecoveryTimer <= 0f)
+                {
+                    currentStamina += staminaRecoveryRate * Time.deltaTime;
+                    currentStamina = Mathf.Clamp(currentStamina, 0f, maxStamina);
+                }
+            }
+            else
+            {
+                staminaRecoveryTimer = staminaRecoveryDelay;
+            }
+        }
     }
 
     public void UiUpdate()
     {
+        // HP UI 업데이트
         float viewHp = currentHp;
         float viewMaxHp = maxHp;
         uiHpimage.rectTransform.sizeDelta = new Vector2((viewHp / viewMaxHp) * 800.0f, 364.0f);
 
-        float alpha = 0.5f - (viewHp / viewMaxHp);
+        // 스테미나 UI 업데이트
+        float viewStamina = currentStamina;
+        float viewMaxStamina = maxStamina;
+        float newWidth = (viewStamina / viewMaxStamina) * 800.0f;
+        uiStaminaBar.rectTransform.sizeDelta = new Vector2(newWidth, uiStaminaBar.rectTransform.sizeDelta.y);
 
+
+        // 블러 효과 업데이트
+        float alpha = 0.5f - (viewHp / viewMaxHp);
         Color currentColor = uiBlureffect.color;
         Color newColor = new Color(currentColor.r, currentColor.g, currentColor.b, alpha);
         uiBlureffect.color = newColor;
@@ -93,11 +144,12 @@ public class FirstPersonController : MonoBehaviour
 
     public void DoDash()
     {
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetKey(KeyCode.LeftShift) && currentStamina > 0f)
         {
             isDashing = true;
+            currentStamina -= Time.deltaTime;
         }
-        if (Input.GetKeyUp(KeyCode.LeftShift))
+        else
         {
             isDashing = false;
         }
@@ -135,15 +187,6 @@ public class FirstPersonController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHp -= damage;
-
-        if (currentHp <= 0)
-        {
-            StartCoroutine(StartEndingScene());
-        }
-        else
-        {
-            // 피해를 입은 후의 처리를 여기에 추가할 수 있습니다.
-        }
     }
 
     private IEnumerator StartEndingScene()
@@ -165,10 +208,35 @@ public class FirstPersonController : MonoBehaviour
             yield return null;
         }
 
+        // 일정 시간 대기
+        yield return new WaitForSeconds(1f);
+
         // 엔딩 씬으로 전환합니다.
-         SceneManager.LoadScene("EndingScene"); // 엔딩 씬을 로드하는 코드를 추가해야 합니다.
+        SceneManager.LoadScene("EndingScene");
     }
 
+    private IEnumerator StartGoodEnding()
+    {
+        float fadeDuration = 2f; // 페이드 인/아웃에 걸리는 시간 (초)
+        float elapsedTime = 0f;
+        Color startColor = uiBlureffect.color;
+        Color endColor = Color.black;
+
+        // 화면을 점점 어둡게 만듭니다.
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / fadeDuration);
+            Color newColor = Color.Lerp(startColor, endColor, t);
+
+            uiBlureffect.color = newColor;
+
+            yield return null;
+        }
+
+        // GoodEnding 씬으로 전환합니다.
+        SceneManager.LoadScene("GoodEnding");
+    }
 
 
     public void Heal(int healAmount)
@@ -220,10 +288,15 @@ public class FirstPersonController : MonoBehaviour
         }
         else if (other.CompareTag("DoorObject"))
         {
-            if (Key_01 && Key_02)
-            {
-                // Open the door
-            }
+            nearDoor = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("DoorObject"))
+        {
+            nearDoor = false;
         }
     }
 }
